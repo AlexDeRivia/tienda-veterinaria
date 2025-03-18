@@ -1,0 +1,19 @@
+#eye{
+    font-size: 30px;
+}
+
+.pass-show {
+    position: relative;
+}
+
+.pass-show span {
+    position: absolute;
+    right: 32px;
+    top: 8px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.pass-show input.form-control {
+    padding-right: 70px !important;
+}

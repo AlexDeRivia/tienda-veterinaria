@@ -1,0 +1,24 @@
+label.btn {
+    min-width: 150px;
+}
+
+.btn-check+.btn:hover {
+    background-color: #d3d4d5;
+}
+
+.btn-check:checked+.btn {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+input:disabled+.btn {
+    background-color: #6c757d;
+    color: #fff;
+    border-color: #6c757d;
+}
+
+input:disabled+.btn.self {
+    background-color: #dc3545;
+    color: white;
+}
