@@ -1,75 +1,154 @@
-# Tienda virtual de productos para mascotas
+<div align="center">
+  <h1>Tienda Veterinaria</h1>
+  <p>Una tienda de productos para mascotas, desde el catálogo hasta una compra simulada.</p>
+  <p>
+    <a href="https://tienda-mascotas-demo-mmoh.onrender.com"><strong>Visitar la tienda</strong></a>
+    &nbsp;·&nbsp;
+    <a href="https://tienda-mascotas-demo-mmoh.onrender.com/catalogo">Explorar el catálogo</a>
+    &nbsp;·&nbsp;
+    <a href="#ejecución-local">Ejecutar en local</a>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Laravel-13-174A43?style=flat-square" alt="Laravel 13">
+    <img src="https://img.shields.io/badge/PHP-8.3%2B-174A43?style=flat-square" alt="PHP 8.3 o superior">
+    <img src="https://img.shields.io/badge/MySQL-8-174A43?style=flat-square" alt="MySQL 8">
+    <img src="https://img.shields.io/badge/Compras-simuladas-E9B75B?style=flat-square" alt="Compras simuladas">
+  </p>
+</div>
 
-Aplicación Laravel con catálogo público, registro e inicio de sesión, carrito, compras de demostración, historial, recuperación de contraseña, edición de perfil y administración de productos y proveedores.
+<p align="center">
+  <a href="https://tienda-mascotas-demo-mmoh.onrender.com">
+    <img src="docs/media/portada.png" alt="Portada de la tienda con acceso al catálogo de productos para mascotas" width="100%">
+  </a>
+</p>
 
-**La compra es simulada:** se registra el método elegido, pero no se cobra dinero ni existe una pasarela de pago.
+## El proyecto
 
-## Requisitos
+Tienda Veterinaria es una aplicación de comercio electrónico construida con Laravel. Permite recorrer el catálogo sin registrarse y completar, con una cuenta de prueba, el flujo de carrito, compra, historial y factura. Incluye un área de administración para mantener productos y proveedores.
 
-- PHP 8.3 o superior compatible con Laravel 13.
-- MySQL 8 y la extensión pdo_mysql de PHP. Las migraciones crean disparadores, procedimientos y una vista; SQLite no sirve para este proyecto.
-- Composer 2.
-- Node.js y npm solo para compilar los recursos de Vite. Las vistas actuales cargan los recursos versionados de public/dist.
+> **La compra es una simulación.** Se registra el método elegido para mostrar el flujo completo, pero no hay pasarela de pago, cobros ni pedidos reales.
 
-## Inicio local
+| Quién entra | Qué puede hacer |
+| --- | --- |
+| Visitante | Explorar el catálogo, buscar productos y consultar sus detalles. |
+| Cliente | Crear una cuenta, iniciar sesión, editar su perfil, usar el carrito, registrar una compra simulada, consultar su historial y factura, y recuperar su contraseña. |
+| Administrador | Revisar el panel, clientes y ventas; crear, editar y gestionar productos y proveedores. |
 
-Usa una **base de datos nueva y vacía**. No apuntes estos comandos a una base con datos que necesites conservar.
+<details>
+<summary><strong>Ver el catálogo y un recorrido sugerido</strong></summary>
 
-1. Instala las dependencias PHP:
+<br>
 
-       composer install
+<img src="docs/media/catalogo.png" alt="Catálogo de la tienda con una cuadrícula de productos y precios" width="100%">
 
-2. Copia la configuración y genera la clave:
+1. Abre el [catálogo público](https://tienda-mascotas-demo-mmoh.onrender.com/catalogo) y busca un producto.
+2. Crea una cuenta de prueba para añadir productos al carrito.
+3. Confirma una compra simulada y revisa el historial y la factura.
+4. Desde tu perfil, prueba la edición de datos o la recuperación de contraseña.
 
-       Copy-Item .env.example .env
-       php artisan key:generate
+</details>
 
-3. Configura en .env APP_ENV=local, APP_URL y las variables DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME y DB_PASSWORD para esa base MySQL. Deja APP_DEBUG=true solo en local.
-4. Crea las tablas y los datos de demostración, enlaza el almacenamiento público de imágenes e inicia el servidor:
+## Arquitectura
 
-       php artisan migrate --seed
-       php artisan storage:link
-       php artisan serve
+```mermaid
+flowchart LR
+    V[Visitante] --> R[Render<br/>Laravel y Apache]
+    G[GitHub<br/>Código fuente] -->|Despliegue manual| R
+    R <-->|Datos y sesiones| A[Aiven<br/>MySQL]
+    R -->|Correo de recuperación| B[Brevo<br/>API HTTPS]
+    B --> C[Bandeja del cliente]
+```
 
-Las cuentas locales de demostración son admin@example.test y cliente1@example.test; ambas usan la contraseña DemoPass123!. Se crean solo cuando APP_ENV es local o testing. Cambia las credenciales y usa datos propios antes de publicar una instancia.
+- **Render** ejecuta la aplicación Docker y sirve las páginas. Los despliegues se lanzan manualmente desde `main`.
+- **Aiven MySQL** conserva cuentas, catálogo, carritos, compras, sesiones e imágenes nuevas. La conexión verifica el certificado TLS.
+- **Brevo** envía los correos de recuperación de contraseña mediante su API HTTPS.
 
-El catálogo y el detalle de cada producto se pueden explorar sin cuenta. Para usar el carrito y registrar una compra de demostración hay que iniciar sesión. Un producto oculto por el administrador deja de estar disponible para compras nuevas, pero sigue en el historial de las anteriores.
+La interfaz usa Blade, Bootstrap y estilos propios. Las migraciones de MySQL crean tablas, disparadores, procedimientos y una vista; la compra se registra dentro de una transacción. El proyecto usa PHP 8.3, Laravel 13 y MySQL 8. El `Dockerfile` define el entorno de producción; los recursos de la interfaz actual están versionados en `public/dist`.
 
-Las imágenes nuevas subidas por el administrador se guardan en MySQL (máximo 512 KB por imagen), por lo que sobreviven los reinicios de Render Free. Las imágenes antiguas en `public/productos` y las rutas antiguas en `storage/app/public/products` siguen funcionando localmente. Para estas últimas sigue siendo útil `php artisan storage:link`.
+## Ejecución local
 
-La recuperación de contraseña usa el correo configurado en Laravel en local. Con `MAIL_MAILER=log`, el enlace aparece en `storage/logs/laravel.log`. En el despliegue se usa la API HTTPS de Brevo mediante `BREVO_API_KEY` y `BREVO_FROM_EMAIL`, porque Render Free bloquea los puertos SMTP habituales. `APP_URL` debe coincidir con la dirección pública HTTPS.
+Necesitas **PHP 8.3 o superior**, Composer 2, **MySQL 8** y la extensión PHP `pdo_mysql`. Crea primero una base MySQL **vacía**. Las migraciones necesitan permisos para crear disparadores, procedimientos y vistas. SQLite no es compatible con este proyecto.
 
-Para reiniciar **únicamente una base descartable**, se puede usar php artisan migrate:fresh --seed. Ese comando elimina todas sus tablas.
+1. Instala dependencias y prepara la configuración:
 
-## Pruebas
+   ```bash
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-Las pruebas de los flujos usan MySQL real. Crea una segunda base de datos local cuyo nombre termine en _test y configúrala explícitamente en el proceso de prueba. Ejemplo en PowerShell:
+   En PowerShell, sustituye `cp` por `Copy-Item .env.example .env`.
 
-    $env:APP_ENV = 'testing'
-    $env:DB_CONNECTION = 'mysql'
-    $env:DB_HOST = '127.0.0.1'
-    $env:DB_PORT = '3306'
-    $env:DB_DATABASE = 'tienda_mascotas_test'
-    $env:DB_USERNAME = 'root'
-    $env:DB_PASSWORD = ''
-    php artisan migrate:fresh --seed --force
-    php artisan test
+2. Configura `.env` para tu base local. Como mínimo, revisa estos valores:
 
-Las pruebas de base de datos se omiten si DB_DATABASE no se define explícitamente con el sufijo _test. Ejecuta migrate:fresh solo después de comprobar que la conexión apunta a la base descartable.
+   ```dotenv
+   APP_ENV=local
+   APP_URL=http://127.0.0.1:8000
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=tienda_mascotas_virtual
+   DB_USERNAME=root
+   DB_PASSWORD=
+   MAIL_MAILER=log
+   ```
 
-Para verificar la compilación de Vite:
+3. Crea el esquema y los datos de ejemplo, e inicia la aplicación:
 
-    npm ci
-    npm run build
+   ```bash
+   php artisan migrate --seed
+   php artisan serve
+   ```
 
-## Despliegue gratuito de la demostración
+Abre <http://127.0.0.1:8000>. Si trabajas con imágenes antiguas guardadas en `storage/app/public/products`, ejecuta también `php artisan storage:link`. Las imágenes nuevas que sube el administrador se guardan en MySQL para sobrevivir a los reinicios del servidor.
 
-**Demostración pública:** [tienda-mascotas-demo-mmoh.onrender.com](https://tienda-mascotas-demo-mmoh.onrender.com). El servicio usa Render Free, Aiven MySQL Free y Brevo Free. Al estar inactivo, Render puede tardar en responder a la primera visita.
+<details>
+<summary><strong>Cuentas y correo de prueba en local</strong></summary>
 
-Consulta [docs/deploy-render-aiven.md](docs/deploy-render-aiven.md). El archivo `render.yaml` declara un único servicio web con `plan: free`, sin vistas previas automáticas ni despliegues en cada commit. Para evitar cambios automáticos de costes, se recomienda crear el Web Service manualmente, seleccionar Free de forma explícita y desactivar Auto-Deploy. La base de datos se crea por separado en Aiven MySQL Free.
+La siembra crea `admin@example.test` y `cliente1@example.test`, ambas con la contraseña `DemoPass123!`, **solo** cuando `APP_ENV` es `local` o `testing`. No se crean en producción.
 
-El registro público solicita solo correo, contraseña y nombre o alias. La compra sigue siendo **simulada**: ningún método de pago cobra dinero. En producción, el administrador inicial se crea una sola vez con credenciales privadas; no se insertan las cuentas de ejemplo.
+Con `MAIL_MAILER=log`, el enlace de recuperación de contraseña se escribe en `storage/logs/laravel.log`; no se envía un correo real.
 
-Para proteger una demostración con 1 GB de MySQL, el registro admite como máximo 10 cuentas de cliente por día y 50 en total. Las compras simuladas se limitan a 10 por cliente y día, 100 por día y 500 en total. La recuperación de contraseña admite 3 correos por cuenta y día y 30 por día en toda la aplicación. Estos topes pueden dejar la demostración sin cupos; se documentan en [la auditoría de seguridad](docs/security-audit-2026-10-19.md).
+</details>
 
-El propietario confirmó que tiene permiso para publicar las imágenes actuales; comprueba la licencia de cualquier recurso que agregues después. Las cuentas de Render y Aiven no tienen tarjeta registrada al 19-10-2026. Sigue comprobando los planes y el uso gratuito; un plan Free con tarjeta agregada en Render puede producir cargos por exceso de uso.
+<details>
+<summary><strong>Compilar recursos y ejecutar pruebas</strong></summary>
+
+Node.js y npm solo son necesarios si vas a trabajar en los recursos de Vite. La interfaz actual también dispone de archivos versionados en `public/dist`.
+
+```bash
+npm ci
+npm run build
+composer audit --locked --no-dev
+npm audit --audit-level=moderate
+```
+
+Las pruebas de base de datos requieren una **segunda base local descartable** cuyo nombre termine en `_test`. Antes de ejecutar `migrate:fresh`, comprueba la conexión: ese comando elimina todas las tablas de la base seleccionada. Ejemplo en PowerShell:
+
+```powershell
+$env:APP_ENV = 'testing'
+$env:DB_CONNECTION = 'mysql'
+$env:DB_HOST = '127.0.0.1'
+$env:DB_PORT = '3306'
+$env:DB_DATABASE = 'tienda_mascotas_test'
+$env:DB_USERNAME = 'root'
+$env:DB_PASSWORD = ''
+php artisan migrate:fresh --seed --force
+php artisan test
+```
+
+La última ejecución documentada completó **26 pruebas y 212 aserciones**. Las comprobaciones de dependencias y compilación están detalladas en la [auditoría de seguridad](docs/security-audit-2026-10-19.md).
+
+</details>
+
+## Despliegue y seguridad
+
+La [instancia pública](https://tienda-mascotas-demo-mmoh.onrender.com) usa un servicio web **Render Free**, una base **Aiven MySQL Free** y **Brevo Free** para el correo. El despliegue es manual y Auto-Deploy está desactivado. La primera visita después de un período de inactividad puede tardar en responder.
+
+La configuración sensible vive en variables privadas de Render; `.env`, contraseñas, claves API y el certificado CA no se publican en Git. El registro, las compras simuladas y los correos de recuperación tienen límites para reducir el abuso y el crecimiento de la base. Hay controles de acceso por rol, protección CSRF, cookies de sesión seguras en producción y validación de imágenes. Estas medidas están descritas junto con sus límites en la [auditoría de seguridad](docs/security-audit-2026-10-19.md).
+
+Para reproducir el despliegue, configurar secretos y comprobar los planes gratuitos, consulta la [guía de Render, Aiven y Brevo](docs/deploy-render-aiven.md). El código no puede garantizar por sí solo que un proveedor externo nunca cobre; revisa los planes, el uso y los métodos de pago de cada cuenta antes de desplegar una copia.
+
+## Autoría y uso
+
+**© 2026 Alex Alcantara. Todos los derechos reservados sobre el código original y la documentación de este proyecto.** El repositorio es público para mostrar y evaluar el trabajo; su publicación no concede permiso para copiarlo, modificarlo o redistribuirlo. Las dependencias y los recursos de terceros conservan sus propias condiciones. Las imágenes de la demostración se publican con permiso, pero ese permiso no se extiende automáticamente a terceros.
