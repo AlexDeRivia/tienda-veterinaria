@@ -1,0 +1,15 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.composer-cache
+node_modules
+vendor
+bootstrap/cache/*.php
+tests
+storage
+public/storage
+public/build
+database/*.sql
+README.md

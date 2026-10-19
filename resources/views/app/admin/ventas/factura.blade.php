@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Ventas')
+@section('title', 'Detalle de compra de demostración')
 
 @section('content')
 
@@ -15,7 +15,7 @@
 
 <nav class="navbar navbar-expand-lg bg-light shadow-sm">
     <div class="container">
-        <a class="navbar-brand">Detalle de factura</a>
+        <a class="navbar-brand">Detalle de compra de demostración</a>
         <a type="button" class="ms-auto btn btn-secondary" href="{{ route('admin.ventas') }}">
             <i class="fa-solid fa-reply me-2"></i> Volver
         </a>
@@ -26,7 +26,7 @@
 
     <div class="card" style="max-width: 850px;">
         <div class="card-header">
-            <p class="mb-0">Factura N° {{ $purchase->id }}</p>
+            <p class="mb-0">Compra de demostración N° {{ $purchase->id }}</p>
         </div>
         <div class="card-header bg-white">
             <table class="table">

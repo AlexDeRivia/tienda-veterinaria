@@ -1,87 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'Tienda virtual')
+@section('title', 'Panel | Tienda de mascotas')
 
 @section('content')
-
-<div class="container">
-
-    <h1 class="mt-4">Dashboard</h1>
-    
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Dashboard</li>
-    </ol>
-    
-    <div class="row">
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-8">Clientes</div>
-                        <div class="col-4 text-end">
-                            <span class="badge bg-white text-primary ms-1 rounded-pill">{{ $clients }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="{{ route('admin.clientes') }}">Ver detalles</a>
-                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-secondary text-white mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-8">Productos</div>
-                        <div class="col-4 text-end">
-                            <span class="badge bg-white text-secondary ms-1 rounded-pill">{{ $products }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="{{ route('admin.productos') }}">Ver detalles</a>
-                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-8">Ventas</div>
-                        <div class="col-4 text-end">
-                            <span class="badge bg-white text-success ms-1 rounded-pill">{{ $purchases }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="{{ route('admin.ventas') }}">Ver detalles</a>
-                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-8">Proveedores</div>
-                        <div class="col-4 text-end">
-                            <span class="badge bg-white text-danger ms-1 rounded-pill">{{ $suppliers }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="{{ route('admin.proveedores') }}">Ver detalles</a>
-                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                </div>
-            </div>
+<div class="container admin-dashboard">
+    <header class="admin-dashboard-header">
+        <div><h1>Control de la tienda</h1><p>Un vistazo a los datos de esta demostración.</p></div>
+        <a class="btn btn-primary" href="{{ route('admin.productos.create') }}">Añadir producto</a>
+    </header>
+    <div class="admin-summary">
+        <a href="{{ route('admin.productos') }}" class="admin-summary-primary"><span>Productos en catálogo</span><strong>{{ $products }}</strong><span>Gestionar productos <span aria-hidden="true">↗</span></span></a>
+        <div class="admin-summary-list">
+            <a href="{{ route('admin.clientes') }}"><span>Clientes</span><strong>{{ $clients }}</strong><span aria-hidden="true">↗</span></a>
+            <a href="{{ route('admin.ventas') }}"><span>Compras de demostración</span><strong>{{ $purchases }}</strong><span aria-hidden="true">↗</span></a>
+            <a href="{{ route('admin.proveedores') }}"><span>Proveedores</span><strong>{{ $suppliers }}</strong><span aria-hidden="true">↗</span></a>
         </div>
     </div>
+    <section class="admin-shortcuts" aria-labelledby="admin-shortcuts-title">
+        <h2 id="admin-shortcuts-title">Accesos rápidos</h2>
+        <div><a href="{{ route('admin.productos') }}">Revisar productos</a><a href="{{ route('admin.proveedores') }}">Gestionar proveedores</a><a href="{{ route('catalogo') }}">Ver la tienda</a></div>
+    </section>
 </div>
-
 @endsection

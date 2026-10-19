@@ -1,17 +1,12 @@
-document.querySelector('.pass-show span').addEventListener('click', e => {
-    const passwordInput = document.querySelector('#contrasena');
-    var eye = document.getElementById('eye');
-    if (e.target.classList.contains('show')) {
-        e.target.classList.remove('show');
-        eye.classList.remove('bi-eye-fill');
-        eye.classList.add('bi-eye-slash-fill');
-        passwordInput.type = 'text';
-    } else {
-        e.target.classList.add('show');
-        eye.classList.remove('bi-eye-slash-fill');
-        eye.classList.add('bi-eye-fill');
-        passwordInput.type = 'password';
-    }
-});
+const passwordToggle = document.querySelector('.password-toggle');
+const passwordInput = document.getElementById('contrasena');
 
-document.getElementById('eye').classList.add('show');
+if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener('click', () => {
+        const isVisible = passwordInput.type === 'text';
+        passwordInput.type = isVisible ? 'password' : 'text';
+        passwordToggle.setAttribute('aria-pressed', String(!isVisible));
+        passwordToggle.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+        passwordToggle.querySelector('i').className = isVisible ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill';
+    });
+}

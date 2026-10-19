@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="{{ asset('dist/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/bootstrap/icons/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/css/brand.css') }}">
 </head>
 
-<body class="@yield('back')">
+<body class="store-shell @yield('back')">
 
 @include('partials.app.navbar')
 

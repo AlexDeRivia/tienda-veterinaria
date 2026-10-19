@@ -28,6 +28,7 @@
                         <th>Producto</th>
                         <th>Precio</th>
                         <th>Stock</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tfoot>
@@ -38,6 +39,7 @@
                         <th>Producto</th>
                         <th>Precio</th>
                         <th>Stock</th>
+                        <th>Estado</th>
                     </tr>
                 </tfoot>
                 <tbody>
@@ -49,6 +51,7 @@
                         <td>{{ $product->name }}</td>
                         <td>S/ {{ $product->price }}</td>
                         <td>{{ $product->stock }}</td>
+                        <td><span class="badge {{ $product->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $product->is_active ? 'Visible' : 'Oculto' }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>

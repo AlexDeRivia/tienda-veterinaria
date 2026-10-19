@@ -1,131 +1,100 @@
 @extends('layouts.cliente')
 
-@section('title', 'Mi carrito')
+@section('title', 'Mi carrito | Tienda de mascotas')
 
 @section('content')
+<main class="container cart-page">
+    <header class="inner-page-heading">
+        <a href="{{ route('catalogo') }}">Seguir explorando</a>
+        <h1>Tu carrito</h1>
+        <p>Revisa los productos antes de registrar tu compra de demostración.</p>
+    </header>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+    @endif
+
+    @if ($cartDetails->count() > 0)
+        <div class="cart-layout">
+            <section class="cart-items" aria-label="Productos del carrito">
+                @foreach ($cartDetails as $detail)
+                    <article class="cart-item">
+                        <div class="cart-item-name">
+                            @if ($detail->is_active)
+                                <h2><a href="{{ route('catalogo.producto', $detail->product_id) }}">{{ $detail->name }}</a></h2>
+                            @else
+                                <h2>{{ $detail->name }}</h2>
+                                <p class="cart-unavailable">Ya no está disponible. Retíralo para continuar.</p>
+                            @endif
+                            <p>Precio unitario: S/ {{ number_format((float) $detail->unit_price, 2) }}</p>
+                        </div>
+                        <div class="cart-item-controls">
+                            <form action="{{ route('cliente.carrito.update') }}" method="post" class="quantity-form">
+                                @csrf
+                                @method('put')
+                                <input type="hidden" name="id" value="{{ $detail->id }}">
+                                <input type="hidden" name="product_id" value="{{ $detail->product_id }}">
+                                <span id="quantity-label-{{ $detail->id }}" class="visually-hidden">Cantidad de {{ $detail->name }}</span>
+                                <button type="submit" name="accion" value="menos" aria-label="Quitar una unidad de {{ $detail->name }}">−</button>
+                                <input type="text" name="cantidad" value="{{ $detail->quantity }}" aria-labelledby="quantity-label-{{ $detail->id }}" readonly>
+                                <button type="submit" name="accion" value="mas" aria-label="Añadir una unidad de {{ $detail->name }}">+</button>
+                            </form>
+                            <form action="{{ route('cliente.carrito.delete', $detail->id) }}" method="post">
+                                @csrf
+                                @method('delete')
+                                <input type="hidden" name="id" value="{{ $detail->id }}">
+                                <button class="cart-remove" type="submit">Retirar</button>
+                            </form>
+                        </div>
+                        <p class="cart-item-subtotal">S/ {{ number_format((float) $detail->subtotal, 2) }}</p>
+                    </article>
+                    @if (session('error') && session('error_for_detail') == $detail->id)
+                        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                    @endif
+                @endforeach
+            </section>
+            <aside class="cart-summary" aria-labelledby="cart-summary-title">
+                <h2 id="cart-summary-title">Resumen</h2>
+                <div class="cart-summary-total"><span>Total</span><strong>S/ {{ number_format((float) $total, 2) }}</strong></div>
+                <p>Esta compra no genera cobros ni pedidos reales.</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal">Confirmar compra de demostración</button>
+            </aside>
+        </div>
+    @else
+        <div class="cart-empty">
+            <h2>Tu carrito está vacío.</h2>
+            <p>Explora el catálogo y añade el primer producto.</p>
+            <a class="btn btn-primary" href="{{ route('catalogo') }}">Ver productos</a>
+        </div>
+    @endif
+</main>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutTitle" aria-hidden="true">
     <div class="modal-dialog">
         <form action="{{ route('cliente.compras.pay') }}" method="post" class="needs-validation" novalidate>
             @csrf
             <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Efectuar compra</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <label for="" class="form-control">Método de pago</label>
-                    <select name="method" class="form-select" aria-label="Default select example" required>
-                        <option selected></option>
+                <div class="modal-header">
+                    <h2 class="modal-title" id="checkoutTitle">Confirmar compra de demostración</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>No se realizará ningún cobro. La compra aparecerá en tu historial.</p>
+                    <label for="payment-method" class="form-label">Método de pago simulado</label>
+                    <select id="payment-method" name="method" class="form-select" required>
+                        <option value="">Selecciona un método</option>
                         @foreach ($methods as $method)
-                        <option value="{{ $method->id }}">{{ $method->description }}</option>
+                            <option value="{{ $method->id }}">{{ $method->description }}</option>
                         @endforeach
                     </select>
-                    <div class="invalid-feedback">Seleccione un método de pago</div>
+                    <div class="invalid-feedback">Selecciona un método de pago.</div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <input type="submit" value="Aceptar" class="btn btn-primary">
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar compra</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
-
-<div class="container py-5">
-
-    <div class="row">
-        <div class="col-md-10">
-            <ul class="list-group list-group-flush px-3">
-                <li class="list-group-item">
-                    <div class="row align-items-center">
-                        <div class="col-4">Producto</div>
-                        <div class="col-2">Cantidad</div>
-                        <div class="col-2 text-end">Precio unitario</div>
-                        <div class="col-2 text-end">Subtotal</div>
-                    </div>
-                </li>
-            </ul>
-            <hr>
-            @if ($cartDetails->count() > 0)
-                @foreach ($cartDetails as $detail)
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        <p class="mb-0">
-                                            <a href="{{ route('cliente.producto.show', $detail->product_id) }}" class="link-underline-light link-dark">{{ $detail->name }}</a>
-                                        </p>
-                                    </div>
-                                    <div class="col-2">
-                                        <form action="{{ route('cliente.carrito.update') }}" method="post">
-                                            @csrf
-                                            @method('put')
-                                            <input type="hidden" name="id" value="{{ $detail->id }}">
-                                            <input type="hidden" name="product_id" value="{{ $detail->product_id }}">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control border-dark" name="cantidad" value="{{ $detail->quantity }}" readonly>
-                                                <button class="btn btn-outline-dark" type="submit" name="accion" value="menos"><i class="fa-solid fa-minus"></i></button>
-                                                <button class="btn btn-outline-dark" type="submit" name="accion" value="mas"><i class="fa-solid fa-plus"></i></button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="col-2 text-end">
-                                        <p class="mb-0">S/ {{ $detail->unit_price }}</p>
-                                    </div>
-                                    <div class="col-2 text-end">
-                                        <p class="mb-0">S/ {{ $detail->subtotal }}</p>
-                                    </div>
-                                    <div class="col-2 text-end">
-                                        <form action="{{ route('cliente.carrito.delete', $detail->id) }}" method="post">
-                                            @csrf
-                                            @method('delete')
-                                            <input type="hidden" name="id" value="{{ $detail->id }}">
-                                            <button class="btn btn-danger" type="submit">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                @if(session('error') && session('error_for_detail') == $detail->id)
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                @endif
-                @endforeach
-                <div class="row">
-                    <div class="col-4 offset-8">
-                        <hr>
-                        <li class="list-group-item">
-                            <div class="row align-items-center">
-                                <div class="col-4">Monto total:</div>
-                                <div class="col-8 text-end">S/ {{$total}}</div>
-                            </div>
-                        </li>
-                    </div>
-                    <div class="col-4 offset-8 text-end mt-5">
-                        <a type="button" class="btn btn-primary me-2" href="{{ route('cliente.home') }}">
-                            Seguir comprando
-                        </a>
-                        <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                            Efectuar compra
-                        </button>
-                    </div>
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <i class="fas fa-cart-shopping fa-3x text-muted mb-3"></i>
-                    <p class="lead mb-0">Tu carrito está vacío, ingresa productos para empezar.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-</div>
-
 @endsection

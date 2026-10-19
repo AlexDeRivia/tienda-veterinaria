@@ -1,6 +1,6 @@
 @extends('layouts.cliente')
 
-@section('title', 'Compras efectuadas')
+@section('title', 'Detalle de compra de demostración')
 
 @php
     $client = $purchase->cart->client;
@@ -17,7 +17,7 @@
 
         <div class="card" style="max-width: 850px;">
             <div class="card-header">
-                <p class="mb-0">Factura N° {{ $purchase->id }}</p>
+                <p class="mb-0">Detalle de compra de demostración N° {{ $purchase->id }}</p>
             </div>
             <div class="card-header bg-white">
                 <table class="table">

@@ -24,11 +24,11 @@
 
                 <div class="card my-3">
                     <div class="card-header">Registrar nuevo proveedor</div>
-                    @error('ruc')
+                    @if ($errors->any())
                     <div class="card-header">
-                        <div class="alert alert-danger mb-0" role="alert">{{ $message }}</div>
+                        <div class="alert alert-danger mb-0" role="alert">{{ $errors->first() }}</div>
                     </div>
-                    @enderror
+                    @endif
                     <div class="card-body">
                         <div class="row">
                             <div class="col-lg-4">

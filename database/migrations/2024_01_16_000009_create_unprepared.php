@@ -10,6 +10,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // MySQL keeps procedures after migrate:fresh drops the tables.
+        // Also clean up a previous migration attempt that stopped partway through.
+        DB::unprepared('DROP VIEW IF EXISTS purchases_view');
+        DB::unprepared('DROP TRIGGER IF EXISTS after_insert_user');
+        DB::unprepared('DROP TRIGGER IF EXISTS before_insert_cart_details');
+        DB::unprepared('DROP PROCEDURE IF EXISTS pay_cart');
+        DB::unprepared('DROP PROCEDURE IF EXISTS add_cart');
+
         DB::unprepared('CREATE TRIGGER after_insert_user
         AFTER INSERT ON users FOR EACH ROW
         BEGIN

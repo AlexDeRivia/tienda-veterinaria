@@ -8,6 +8,10 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        $request->validate([
+            'correo' => 'required|email',
+            'contrasena' => 'required|string',
+        ]);
         $email = $request->correo;
         $password = $request->contrasena;
         $remember = $request->has('remember');
@@ -18,6 +22,7 @@ class AuthController extends Controller
         ];
 
         if (auth('users')->attempt($credentials, $remember)) {
+            $request->session()->regenerate();
             $role_id = auth('users')->user()->role_id;
             switch ($role_id) {
                 case 1:
@@ -32,9 +37,11 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         auth('users')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 }

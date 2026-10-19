@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Auth\Notifications\ResetPassword;
+use App\Services\BrevoPasswordResetMailer;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -46,5 +48,19 @@ class User extends Authenticatable
     public function carts()
     {
         return $this->hasMany(Cart::class, 'client_id');
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        if (config('services.brevo.key')) {
+            app(BrevoPasswordResetMailer::class)->send($this, $token);
+            return;
+        }
+
+        if (app()->environment('production')) {
+            throw new \RuntimeException('El correo de recuperación no está configurado.');
+        }
+
+        $this->notify(new ResetPassword($token));
     }
 }

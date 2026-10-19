@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\PaymentMethod;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PaymentMethodSeeder extends Seeder
 {
@@ -21,7 +20,10 @@ class PaymentMethodSeeder extends Seeder
         ];
 
         foreach ($suppliers as $supplier) {
-            PaymentMethod::create($supplier);
+            DB::table('payment_methods')->updateOrInsert(
+                ['description' => $supplier['description']],
+                ['updated_at' => now()]
+            );
         }
     }
 }

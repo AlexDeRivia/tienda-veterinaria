@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -8,9 +8,10 @@
     <title>@yield('title')</title>
     <link rel="stylesheet" href="{{ asset('dist/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/css/brand.css') }}">
 </head>
 
-<body>
+<body class="store-shell">
 
 @include('partials.cliente.navbar')
 

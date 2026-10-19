@@ -22,7 +22,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call(StatusSeeder::class);
         $this->call(RoleSeeder::class);
-        $this->call(UserSeeder::class);
+        if (app()->environment(['local', 'testing'])) {
+            $this->call(UserSeeder::class);
+        }
         $this->call(SupplierSeeder::class);
         $this->call(PaymentMethodSeeder::class);
         $this->call(ProductSeeder::class);

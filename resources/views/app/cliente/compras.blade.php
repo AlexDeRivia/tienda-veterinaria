@@ -1,58 +1,31 @@
 @extends('layouts.cliente')
 
-@section('title', 'Compras efectuadas')
+@section('title', 'Mis compras | Tienda de mascotas')
 
 @section('content')
-
-<div class="container py-5">
-
+<main class="container purchases-page">
+    <header class="inner-page-heading">
+        <a href="{{ route('catalogo') }}">Volver al catálogo</a>
+        <h1>Mis compras</h1>
+        <p>Consulta las compras que registraste en esta demostración.</p>
+    </header>
     @if ($purchases->count() > 0)
-        
-        <div class="row">
-            <div class="col-md-10">
-                <ul class="list-group list-group-flush px-3">
-                    <li class="list-group-item">
-                        <div class="row align-items-center">
-                            <div class="col-2">ID</div>
-                            <div class="col-4">Total</div>
-                            <div class="col-4">Fecha de orden</div>
-                        </div>
-                    </li>
-                </ul>
-                <hr>
-                @foreach ($purchases as $purchase)
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <div class="row align-items-center">
-                                    <div class="col-2">
-                                        <p class="mb-0">{{ $purchase->purchase_id }}</p>
-                                    </div>
-                                    <div class="col-4">
-                                        <p class="mb-0">S/ {{ $purchase->total }}</p>
-                                    </div>
-                                    <div class="col-4">
-                                        <p class="mb-0">{{ $purchase->created_at }}</p>
-                                    </div>
-                                    <div class="col-2 text-end">
-                                        <a href="{{ route('cliente.factura', $purchase->purchase_id) }}" class="btn btn-dark">Ver detalles</a>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                @endforeach
-            </div>
+        <div class="purchases-list">
+            @foreach ($purchases as $purchase)
+                <article class="purchase-row">
+                    <div><span>Compra</span><h2>N.º {{ $purchase->purchase_id }}</h2></div>
+                    <div><span>Fecha</span><p>{{ $purchase->created_at }}</p></div>
+                    <div><span>Total</span><p class="purchase-total">S/ {{ number_format((float) $purchase->total, 2) }}</p></div>
+                    <a class="btn btn-outline-primary" href="{{ route('cliente.factura', $purchase->purchase_id) }}">Ver detalle</a>
+                </article>
+            @endforeach
         </div>
     @else
-        <div class="text-center py-5">
-            <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
-            <p class="lead mb-0">Aún no has efectuado ninguna compra.</p>
+        <div class="cart-empty">
+            <h2>Aún no registraste compras.</h2>
+            <p>Elige un producto del catálogo para probar el recorrido.</p>
+            <a class="btn btn-primary" href="{{ route('catalogo') }}">Ver productos</a>
         </div>
     @endif
-
-</div>
-
+</main>
 @endsection

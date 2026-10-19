@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SupplierController extends Controller
 {
@@ -30,10 +32,15 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'ruc'=> "required|unique:suppliers,ruc",
+        $validated = $request->validate([
+            'ruc' => 'required|string|max:20|unique:suppliers,ruc',
+            'email' => 'required|email|max:255|unique:suppliers,email',
+            'business_name' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
         ]);
-        Supplier::create($request->all());
+        Supplier::create($validated);
         return redirect()->route('admin.proveedores');
     }
 
@@ -58,10 +65,15 @@ class SupplierController extends Controller
      */
     public function update(Request $request, Supplier $supplier)
     {
-        $request->validate([
-            'ruc' => "required|unique:suppliers,ruc,$supplier->id,id"
+        $validated = $request->validate([
+            'ruc' => ['required', 'string', 'max:20', Rule::unique('suppliers', 'ruc')->ignore($supplier->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('suppliers', 'email')->ignore($supplier->id)],
+            'business_name' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
         ]);
-        $supplier->update($request->all());
+        $supplier->update($validated);
         return redirect()->route('admin.proveedores');
     }
 
@@ -70,6 +82,12 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
+        if (Product::where('supplier_id', $supplier->id)->exists()) {
+            return back()->withErrors([
+                'supplier' => 'No se puede eliminar un proveedor que tiene productos.',
+            ]);
+        }
+
         $supplier->delete();
         return redirect()->route('admin.proveedores');
     }

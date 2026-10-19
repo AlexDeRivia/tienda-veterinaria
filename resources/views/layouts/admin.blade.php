@@ -14,9 +14,10 @@
     <link rel="stylesheet" href="{{ asset('dist/css/datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/css/brand.css') }}">
 </head>
 
-<body class="sb-nav-fixed">
+<body class="sb-nav-fixed admin-shell">
 
 @component('partials.admin.navbar')
     @slot('email', $email)

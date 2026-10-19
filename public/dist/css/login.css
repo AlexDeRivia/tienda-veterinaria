@@ -6,14 +6,25 @@
     position: relative;
 }
 
-.pass-show span {
+.pass-show .password-toggle {
     position: absolute;
-    right: 32px;
-    top: 8px;
-    text-transform: uppercase;
+    right: 9px;
+    top: 9px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    color: #174a43;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
     cursor: pointer;
 }
 
+.pass-show .password-toggle:hover {
+    background: #d8ebe6;
+}
+
 .pass-show input.form-control {
-    padding-right: 70px !important;
+    padding-right: 60px !important;
 }

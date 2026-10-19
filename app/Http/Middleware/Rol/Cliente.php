@@ -15,31 +15,16 @@ class Cliente
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $ruta = $this->validar();
-
-        if ($ruta !== null) {
-            return redirect()->route($ruta);
-        }
-
-        return $next($request);
-    }
-
-    private function validar()
-    {
         $user = auth('users')->user();
-
-        if (isset($user)) {
-            $role_id = $user->role_id;
-            switch ($role_id) {
-                case 1:
-                    return 'admin.home';
-                    break;
-                case 2:
-                    break;
-            }
-        } else {
-            return 'login';
+        if ($user === null) {
+            return redirect()->route('login');
         }
-        return null;
+
+        if ((int) $user->role_id === 1) {
+            return redirect()->route('admin.home');
+        }
+
+        abort_unless((int) $user->role_id === 2, 403);
+        return $next($request);
     }
 }

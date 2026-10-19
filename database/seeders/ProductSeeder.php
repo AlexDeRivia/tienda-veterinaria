@@ -13,6 +13,10 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        if (Product::query()->exists()) {
+            return;
+        }
+
         $products = [
             [
                 'name' => 'Royal Canin Adult Cat Food',

@@ -27,7 +27,7 @@
                 </a>
                 <a class="nav-link {{ Str::startsWith(Route::currentRouteName(), 'admin.ventas') || Str::startsWith(Route::currentRouteName(), 'admin.factura') ? $active : '' }}" href="{{ route('admin.ventas') }}">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-cart-shopping"></i></div>
-                    Ventas
+                    Compras de demostración
                 </a>
                 <a class="nav-link {{ Str::startsWith(Route::currentRouteName(), 'admin.proveedores') ? $active : '' }}" href="{{ route('admin.proveedores') }}">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-truck"></i></div>

@@ -16,7 +16,7 @@ class HomeController extends Controller
     {
         $query = $request->input('query', '');
 
-        $products = Product::when($query, function ($queryBuilder) use ($query) {
+        $products = Product::where('is_active', true)->when($query, function ($queryBuilder) use ($query) {
             return $queryBuilder->where('name', 'like', '%' . $query . '%');
         })->paginate(12)->onEachSide(1);
 
@@ -33,6 +33,7 @@ class HomeController extends Controller
 
     public function producto(Product $product)
     {
+        abort_unless($product->is_active, 404);
         return view('app.cliente.producto', compact('product'));
     }
 
@@ -49,6 +50,7 @@ class HomeController extends Controller
                 'cart_details.id',
                 'products.id as product_id',
                 'products.name',
+                'products.is_active',
                 'cart_details.quantity',
                 'cart_details.unit_price',
                 DB::raw('cart_details.quantity * cart_details.unit_price as subtotal')

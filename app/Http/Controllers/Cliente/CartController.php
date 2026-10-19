@@ -13,10 +13,14 @@ class CartController extends Controller
 {
     public function add(Request $request)
     {
-        $product_id = $request->id;
-        $cantidad = $request->cantidad;
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:products,id',
+            'cantidad' => 'required|integer|min:1',
+        ]);
 
-        $stock = Product::find($product_id)->stock;
+        $product = Product::where('is_active', true)->findOrFail($validated['id']);
+        $cantidad = $validated['cantidad'];
+        $stock = $product->stock;
 
         if ($cantidad > $stock) {
             return back()
@@ -25,45 +29,60 @@ class CartController extends Controller
         }
 
         $client_id = auth('users')->user()->id;
-        $cart_id = Cart::where('client_id', $client_id)->where('status_id', 1)->first()->id;
-        DB::unprepared("CALL add_cart($cart_id, $product_id, $cantidad)");
+        DB::transaction(function () use ($client_id, $product, $cantidad) {
+            $cart_id = Cart::where('client_id', $client_id)->where('status_id', 1)
+                ->lockForUpdate()->firstOrFail()->id;
+            DB::statement('CALL add_cart(?, ?, ?)', [$cart_id, $product->id, $cantidad]);
+        });
         return redirect()->route('cliente.carrito');
     }
 
     public function update(Request $request)
     {
+        $validated = $request->validate([
+            'id' => 'required|integer',
+            'accion' => 'required|in:mas,menos',
+        ]);
+        return DB::transaction(function () use ($validated) {
+            $cart_id = Cart::where('client_id', auth('users')->id())
+                ->where('status_id', 1)->lockForUpdate()->firstOrFail()->id;
+            $detail = CartDetail::where('cart_id', $cart_id)
+                ->lockForUpdate()->findOrFail($validated['id']);
+            $cantidad = $detail->quantity;
 
-        $detail_id = $request->id;
-        $accion = $request->accion;
-        $cantidad = $request->cantidad;
-
-        switch ($accion) {
-            case 'mas':
-                $stock = Product::find($request->product_id)->stock;
-                if ($stock > $cantidad) {
-                    $cantidad++;
-                } else {
-                    $cantidad = $stock;
-                    $error = "El stock actual es de $stock, lo cual es insuficiente para cubrir la solicitud.";
-                    return redirect()->route('cliente.carrito')->with('error', $error)->with('error_for_detail', $detail_id);
-                }
-                break;
-            case 'menos':
-                if ($cantidad != 1) {
-                    $cantidad--;
-                }
-                break;
-            default:
-                break;
-        }
-        CartDetail::where('id', $detail_id)->update(['quantity' => $cantidad]);
-        return redirect()->route('cliente.carrito');
+            switch ($validated['accion']) {
+                case 'mas':
+                    if (!$detail->product->is_active) {
+                        return redirect()->route('cliente.carrito')->with('error', 'Este producto ya no está disponible. Retíralo del carrito.')->with('error_for_detail', $detail->id);
+                    }
+                    $stock = $detail->product->stock;
+                    if ($stock > $cantidad) {
+                        $cantidad++;
+                    } else {
+                        $error = "El stock actual es de $stock, lo cual es insuficiente para cubrir la solicitud.";
+                        return redirect()->route('cliente.carrito')->with('error', $error)->with('error_for_detail', $detail->id);
+                    }
+                    break;
+                case 'menos':
+                    if ($cantidad > 1) {
+                        $cantidad--;
+                    }
+                    break;
+            }
+            $detail->quantity = $cantidad;
+            $detail->save();
+            return redirect()->route('cliente.carrito');
+        });
     }
 
     public function destroy($detail_id)
     {
-        $detail = CartDetail::find($detail_id);
-        $detail->delete();
+        DB::transaction(function () use ($detail_id) {
+            $cart_id = Cart::where('client_id', auth('users')->id())
+                ->where('status_id', 1)->lockForUpdate()->firstOrFail()->id;
+            $detail = CartDetail::where('cart_id', $cart_id)->findOrFail($detail_id);
+            $detail->delete();
+        });
         return redirect()->route('cliente.carrito');
     }
 }

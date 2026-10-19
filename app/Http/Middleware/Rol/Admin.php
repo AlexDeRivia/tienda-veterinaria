@@ -15,31 +15,16 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $ruta = $this->validar();
-
-        if ($ruta !== null) {
-            return redirect()->route($ruta);
-        }
-
-        return $next($request);
-    }
-
-    private function validar()
-    {
         $user = auth('users')->user();
-
-        if (isset($user)) {
-            $role_id = $user->role_id;
-            switch ($role_id) {
-                case 1:
-                    break;
-                case 2:
-                    return 'cliente.home';
-                    break;
-            }
-        } else {
-            return 'login';
+        if ($user === null) {
+            return redirect()->route('login');
         }
-        return null;
+
+        if ((int) $user->role_id === 2) {
+            return redirect()->route('cliente.home');
+        }
+
+        abort_unless((int) $user->role_id === 1, 403);
+        return $next($request);
     }
 }

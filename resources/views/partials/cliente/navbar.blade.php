@@ -1,55 +1,34 @@
 @php
-
-    use App\Models\User;
-    use App\Models\Cart;
     use App\Models\CartDetail;
-
     $user = auth('users')->user();
-
-    $cart = CartDetail::join('carts', 'cart_details.cart_id', '=', 'carts.id')
-        ->where('carts.client_id', $user->id)
-        ->where('carts.status_id', 1)
-        ->count();
+    $isClient = $user && (int) $user->role_id === 2;
+    $cart = $isClient ? CartDetail::join('carts', 'cart_details.cart_id', '=', 'carts.id')
+        ->where('carts.client_id', $user->id)->where('carts.status_id', 1)->count() : 0;
 @endphp
 
-<nav class="navbar navbar-expand-lg bg-dark sticky-top shadow-sm">
-
+<nav class="navbar navbar-expand-lg store-nav sticky-top" aria-label="Navegación principal">
     <div class="container">
-
-        <a class="navbar-brand" href="{{ route('cliente.home') }}">
-            <img src="{{ asset('img/logo/white.png') }}" alt="" height="40">
+        <a class="navbar-brand store-brand" href="{{ route('home') }}" aria-label="Tienda de mascotas, inicio">
+            <span class="brand-symbol" aria-hidden="true">+</span><span>Tienda<br><strong>de mascotas</strong></span>
         </a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customerNav" aria-controls="customerNav" aria-expanded="false" aria-label="Abrir menú">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
-        <div class="collapse navbar-collapse" id="navbarSupportedContent" data-bs-theme="light">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle link-light" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ $user->email }} <i class="fa fa-user ms-1"></i>
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{{ route('cliente.home') }}">Inicio</a></li>
-                        <li><a class="dropdown-item" href="{{ route('cliente.perfil') }}">Mi perfil</a></li>
-                        <li><a class="dropdown-item" href="{{ route('cliente.compras') }}">Compras</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li>
-                            <form action="{{ route('logout.auth') }}" method="post">
-                                @csrf
-                                <input type="submit" class="dropdown-item" value="Cerrar Sesión">
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-light me-3 ms-0 mx-lg-3 mb-2 mb-lg-0" href="{{ route('cliente.carrito') }}">
-                        <i class="fa fa-cart-shopping me-1"></i>
-                        Carrito
-                        <span class="badge bg-dark text-white ms-1 rounded-pill">{{ $cart }}</span>
-                    </a>
-                </li>
+        <div class="collapse navbar-collapse" id="customerNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('catalogo*') ? 'active' : '' }}" href="{{ route('catalogo') }}" @if(request()->routeIs('catalogo*')) aria-current="page" @endif>Catálogo</a></li>
+                @if ($isClient)
+                    <li class="nav-item"><a class="nav-link" href="{{ route('cliente.compras') }}">Mis compras</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('cliente.perfil') }}">Mi cuenta</a></li>
+                    <li class="nav-item"><a class="btn btn-primary cart-nav-link" href="{{ route('cliente.carrito') }}">Carrito <span class="cart-count" aria-label="{{ $cart }} productos">{{ $cart }}</span></a></li>
+                    <li class="nav-item"><form action="{{ route('logout.auth') }}" method="post">@csrf<button class="nav-link nav-logout" type="submit">Salir</button></form></li>
+                @elseif ($user)
+                    <li class="nav-item"><a class="btn btn-primary" href="{{ route('admin.home') }}">Administración</a></li>
+                @else
+                    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Ingresar</a></li>
+                    <li class="nav-item"><a class="btn btn-primary" href="{{ route('register') }}">Crear cuenta</a></li>
+                @endif
             </ul>
         </div>
     </div>

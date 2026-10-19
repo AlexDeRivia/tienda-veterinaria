@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class HomeController extends Controller
 {
+    private const MAX_CLIENT_ACCOUNTS = 50;
+
+    private const MAX_CLIENT_ACCOUNTS_PER_DAY = 10;
+
     public function login()
     {
         return view('app.login');
@@ -19,29 +26,40 @@ class HomeController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'correo' => "required|unique:users,email",
-            'dni' => "required|numeric|digits:8|unique:users,dni",
-            'celular' => "required|numeric|digits:9"
+        $validated = $request->validate([
+            'correo' => 'required|email|max:255|unique:users,email',
+            'contrasena' => 'required|string|min:12|max:72',
+            'nombres' => 'required|string|max:255',
         ]);
 
-        $user = new User();
-        $user->email = $request->correo;
-        $user->password = $request->contrasena;
-        $user->dni = $request->dni;
-        $user->names = $request->nombres;
-        $user->surnames = $request->apellidos;
-        $user->address = $request->direccion;
-        $user->phone = $request->celular;
-        $user->birthdate = $request->fech_nac;
-        $user->save();
+        $user = DB::transaction(function () use ($validated) {
+            // The role row serializes concurrent registrations so both hard caps hold.
+            Role::whereKey(2)->lockForUpdate()->firstOrFail();
 
-        $credentials = [
-            'email' => $request->correo,
-            'password' => $request->contrasena,
-        ];
+            if (User::where('role_id', 2)->count() >= self::MAX_CLIENT_ACCOUNTS) {
+                throw ValidationException::withMessages([
+                    'correo' => 'Los cupos de esta demostración están completos.',
+                ]);
+            }
+            if (User::where('role_id', 2)->where('created_at', '>=', now()->subDay())->count()
+                >= self::MAX_CLIENT_ACCOUNTS_PER_DAY) {
+                throw ValidationException::withMessages([
+                    'correo' => 'Se alcanzó el límite diario de registros de esta demostración. Intenta más tarde.',
+                ]);
+            }
 
-        auth('users')->attempt($credentials, true);
+            $user = new User();
+            $user->email = $validated['correo'];
+            $user->password = $validated['contrasena'];
+            $user->names = $validated['nombres'];
+            $user->save();
+
+            return $user;
+        });
+
+        $user->refresh();
+        auth('users')->login($user);
+        $request->session()->regenerate();
 
         $role_id = auth('users')->user()->role_id;
         

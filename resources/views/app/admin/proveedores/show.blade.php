@@ -14,6 +14,10 @@
 
 <div class="container">
 
+    @error('supplier')
+        <div class="alert alert-danger mt-3" role="alert">{{ $message }}</div>
+    @enderror
+
     <div class="row">
 
         <div class="col-lg-6 offset-lg-3">
@@ -27,7 +31,6 @@
                     <div class="card-header">Eliminar Proveedor</div>
                     <div class="card-body">
                         <p>El siguiente proveedor será eliminado definitivamente:</p>
-                        <input type="hidden" name="id" value="6">
                         <table class="table table-hover">
                             <thead>
                                 <tr>

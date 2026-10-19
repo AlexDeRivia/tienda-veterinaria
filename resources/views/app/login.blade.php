@@ -1,6 +1,6 @@
 @extends('layouts.home')
 
-@section('title', 'Tienda Virtual')
+@section('title', 'Ingresar | Tienda de mascotas')
 
 @section('back', 'bg-light')
 
@@ -16,9 +16,10 @@
 
             <div class="card shadow-sm">
 
-                <div class="card-header bg-uns">
-                    <a href="{{ route('home') }}"><img src="{{ asset('img/logo/white.png') }}" alt="Logo" height="45" class="my-3"></a>
-                </div>
+                <div class="card-header bg-uns"><a class="auth-brand" href="{{ route('home') }}">Tienda de mascotas</a></div>
+                @if (session('status'))
+                    <div class="card-header"><div class="alert alert-success mb-0" role="status">{{ session('status') }}</div></div>
+                @endif
 
                 @if ($errors->has('correo'))
                 <div class="card-header">
@@ -31,6 +32,8 @@
                     @csrf
 
                     <div class="card-body">
+                        <h1 class="auth-heading">Ingresa a tu cuenta</h1>
+                        <p class="auth-subtitle">Continúa con tu carrito y revisa tus compras de demostración.</p>
                         <div class="form-floating mb-3">
                             <input value="{{ old('correo') }}" type="email" class="form-control" placeholder="Correo" id="correo" name="correo" aria-describedby="emailHelp" required>
                             <label for="correo" class="form-label">Correo</label>
@@ -38,7 +41,7 @@
                         </div>
                         <div class="form-floating pass-show">
                             <input value="{{ old('contrasena') }}" type="password" class="form-control" placeholder="Contraseña" id="contrasena" name="contrasena" required>
-                            <span><i class="text-secondary bi bi-eye-fill" id="eye"></i></span>
+                            <button class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false"><i class="bi bi-eye-fill" id="eye" aria-hidden="true"></i></button>
                             <label for="contrasena" class="form-label">Contraseña</label>
                             <div class="invalid-feedback">Ingrese su contraseña</div>
                         </div>
@@ -52,9 +55,9 @@
                     <div class="card-footer text-end">
                         <div class="row my-1">
                             <div class="col">
-                                <a type="button" class="btn btn-secondary ms-2" onclick="limpiarFormulario()">
+                                <button type="button" class="btn btn-outline-primary ms-2" onclick="limpiarFormulario()">
                                     Limpiar
-                                </a>
+                                </button>
                                 <button type="submit" class="btn btn-primary ms-2" {{ session('disabled') ? 'disabled' : '' }}>
                                     Ingresar
                                 </button>
@@ -64,6 +67,7 @@
                 </form>
                 <div class="card-footer text-center">
                     <span>¿No tienes una cuenta? <a href="{{ route('register') }}" class="link-primary">Registrarte aquí</a></span>
+                    <div><a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a></div>
                 </div>
             </div>
         </div>
