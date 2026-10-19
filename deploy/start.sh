@@ -17,7 +17,8 @@ case "$APP_URL" in
 esac
 
 printf '%s' "$AIVEN_CA_BASE64" | base64 -d > /tmp/aiven-ca.pem
-chmod 600 /tmp/aiven-ca.pem
+chown root:www-data /tmp/aiven-ca.pem
+chmod 640 /tmp/aiven-ca.pem
 
 php artisan migrate --force
 php artisan db:seed --force
