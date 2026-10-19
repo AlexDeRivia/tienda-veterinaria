@@ -35,6 +35,7 @@ class FeatureGapWorkflowTest extends TestCase
     {
         $product = Product::firstOrFail();
 
+        $this->get('/')->assertOk()->assertSeeText('Explorar productos');
         $this->get('/catalogo')->assertOk()->assertSee($product->name);
         $this->get('/producto/'.$product->id)->assertOk()->assertSee('Ingresa para añadir al carrito');
         $this->post('/cliente/carrito', ['id' => $product->id, 'cantidad' => 1])
