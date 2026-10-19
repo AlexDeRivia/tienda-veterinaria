@@ -11,7 +11,7 @@ Herramientas y comprobaciones ejecutadas:
 - Búsqueda de secretos y artefactos sensibles con `rg` y `git grep` en árbol actual e historial disponible. No se encontró un secreto real versionado. Se retiró del árbol actual un SQL legado de otro proyecto que no contenía `INSERT`, contraseñas ni claves; permanece en el commit inicial histórico.
 - `composer audit --locked --no-dev --format=summary`: ningún aviso de seguridad en dependencias PHP de producción.
 - `npm audit --audit-level=moderate`: cero avisos después de actualizar el conjunto de herramientas de desarrollo. `npm run build`: exitoso con Vite 8; persisten avisos de deprecación Sass/Bootstrap, sin fallo de compilación.
-- `php artisan migrate --force` sobre MySQL local 8.0 y `php artisan test`: 25 pruebas, 207 aserciones, todas correctas.
+- `php artisan migrate --force` sobre MySQL local 8.0 y `php artisan test`: 26 pruebas, 210 aserciones, todas correctas.
 - Revisión visual de Render y Aiven: Render Hobby sin tarjeta, servicio web previsto como Free; Aiven MySQL aparece en Free (1 GB) y facturación actual de $0. La API de correo Brevo y el sitio público aún no se verificaron al redactar este informe.
 
 Gitleaks, Semgrep, ZAP y un análisis dinámico de producción no se ejecutaron: las herramientas no estaban disponibles o aún no había despliegue. La ausencia de resultados de estas herramientas no implica ausencia de vulnerabilidades.
@@ -60,6 +60,8 @@ No se confirmó una vulnerabilidad de autorización, inyección SQL, XSS, CSRF o
 ### S-06 — Tráfico masivo hacia el servicio gratuito
 
 **Observación:** ningún límite dentro de PHP puede impedir que un volumen grande de solicitudes consuma horas, ancho de banda o conexiones antes de llegar a la aplicación. Los límites de escritura anteriores evitan gran parte del crecimiento de registros, compras y correos; el caché `file` se pierde al reiniciar Render. **Estado:** potencial. **Acción recomendada:** mantener cuentas sin tarjeta, vigilar uso y suspender el servicio si se detecta abuso. El servicio Free puede dejar de estar disponible al agotar su cuota. La protección de acceso no debe interpretarse como garantía de disponibilidad.
+
+La ruta `/health` quedó fuera del middleware de sesiones web en `app/Providers/RouteServiceProvider.php`: las comprobaciones periódicas de Render ya no crean sesiones anónimas en MySQL. Una prueba con `SESSION_DRIVER=database` verificó que el número de filas de sesiones permanece igual.
 
 ## Comprobaciones parciales y plan
 

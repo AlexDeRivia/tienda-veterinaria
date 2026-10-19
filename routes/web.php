@@ -16,7 +16,6 @@ use App\Http\Controllers\ProductImageController;
 use App\Http\Middleware\Rol\Admin;
 use App\Http\Middleware\Rol\Cliente;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,10 +29,6 @@ use Illuminate\Support\Facades\DB;
 */
 
 Route::view('/', 'app.home')->name('home');
-Route::get('/health', function () {
-    DB::select('SELECT 1');
-    return response('ok', 200)->header('Content-Type', 'text/plain');
-});
 Route::view('/nosotros', 'app.nosotros')->name('nosotros');
 Route::get('/catalogo', [ClienteHomeController::class, 'home'])->name('catalogo');
 Route::get('/producto/{product}', [ClienteHomeController::class, 'producto'])->name('catalogo.producto');

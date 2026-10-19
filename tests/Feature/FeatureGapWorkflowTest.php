@@ -41,6 +41,16 @@ class FeatureGapWorkflowTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
+    public function test_health_checks_do_not_create_database_sessions(): void
+    {
+        config()->set('session.driver', 'database');
+        $before = DB::table('sessions')->count();
+
+        $this->get('/health')->assertOk()->assertSeeText('ok');
+
+        $this->assertSame($before, DB::table('sessions')->count());
+    }
+
     public function test_hidden_product_cannot_be_bought_but_old_purchase_remains_visible(): void
     {
         $client = User::where('role_id', 2)->firstOrFail();

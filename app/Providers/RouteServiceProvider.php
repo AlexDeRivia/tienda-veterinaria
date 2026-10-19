@@ -8,6 +8,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -52,6 +53,12 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            // Render probes this often; keep it outside the web session middleware.
+            Route::get('/health', function () {
+                DB::select('SELECT 1');
+                return response('ok', 200)->header('Content-Type', 'text/plain');
+            });
+
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
