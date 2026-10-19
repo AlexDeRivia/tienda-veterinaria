@@ -64,10 +64,12 @@ Para verificar la compilación de Vite:
 
 ## Despliegue gratuito de la demostración
 
+**Demostración pública:** [tienda-mascotas-demo-mmoh.onrender.com](https://tienda-mascotas-demo-mmoh.onrender.com). El servicio usa Render Free, Aiven MySQL Free y Brevo Free. Al estar inactivo, Render puede tardar en responder a la primera visita.
+
 Consulta [docs/deploy-render-aiven.md](docs/deploy-render-aiven.md). El archivo `render.yaml` declara un único servicio web con `plan: free`, sin vistas previas automáticas ni despliegues en cada commit. Para evitar cambios automáticos de costes, se recomienda crear el Web Service manualmente, seleccionar Free de forma explícita y desactivar Auto-Deploy. La base de datos se crea por separado en Aiven MySQL Free.
 
 El registro público solicita solo correo, contraseña y nombre o alias. La compra sigue siendo **simulada**: ningún método de pago cobra dinero. En producción, el administrador inicial se crea una sola vez con credenciales privadas; no se insertan las cuentas de ejemplo.
 
 Para proteger una demostración con 1 GB de MySQL, el registro admite como máximo 10 cuentas de cliente por día y 50 en total. Las compras simuladas se limitan a 10 por cliente y día, 100 por día y 500 en total. La recuperación de contraseña admite 3 correos por cuenta y día y 30 por día en toda la aplicación. Estos topes pueden dejar la demostración sin cupos; se documentan en [la auditoría de seguridad](docs/security-audit-2026-10-19.md).
 
-La preparación del código no crea recursos ni comprueba las cuentas de los proveedores. El propietario confirmó que tiene permiso para publicar las imágenes actuales; comprueba la licencia de cualquier recurso que agregues después. Antes de publicar, verifica los planes Free y la ausencia de métodos de pago en las cuentas de Render, Aiven y Brevo. Un plan Free con tarjeta agregada en Render puede producir cargos por exceso de uso.
+El propietario confirmó que tiene permiso para publicar las imágenes actuales; comprueba la licencia de cualquier recurso que agregues después. Las cuentas de Render y Aiven no tienen tarjeta registrada al 19-10-2026. Sigue comprobando los planes y el uso gratuito; un plan Free con tarjeta agregada en Render puede producir cargos por exceso de uso.

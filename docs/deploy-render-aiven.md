@@ -2,6 +2,8 @@
 
 La aplicación registra compras simuladas. No procesa pagos. Esta guía prepara una demostración pública pequeña, sin promesa de disponibilidad continua.
 
+**Instancia publicada:** [tienda-mascotas-demo-mmoh.onrender.com](https://tienda-mascotas-demo-mmoh.onrender.com). El 19-10-2026 se verificaron la portada, el catálogo, la compra simulada, la edición de perfil y la entrega de un correo de recuperación. Render quedó Free/$0 sin tarjeta; Aiven, Free con coste neto actual de $0 sin tarjeta; Brevo, Free.
+
 ## Límite de gasto: cero
 
 1. Usa cuentas **sin método de pago** en Render, Aiven y Brevo. Si cualquiera exige agregar una tarjeta para continuar, detén el despliegue. No aceptes una prueba de pago ni un cambio de plan.

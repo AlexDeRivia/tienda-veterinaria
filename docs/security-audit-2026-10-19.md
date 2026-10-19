@@ -11,10 +11,10 @@ Herramientas y comprobaciones ejecutadas:
 - Búsqueda de secretos y artefactos sensibles con `rg` y `git grep` en árbol actual e historial disponible. No se encontró un secreto real versionado. Se retiró del árbol actual un SQL legado de otro proyecto que no contenía `INSERT`, contraseñas ni claves; permanece en el commit inicial histórico.
 - `composer audit --locked --no-dev --format=summary`: ningún aviso de seguridad en dependencias PHP de producción.
 - `npm audit --audit-level=moderate`: cero avisos después de actualizar el conjunto de herramientas de desarrollo. `npm run build`: exitoso con Vite 8; persisten avisos de deprecación Sass/Bootstrap, sin fallo de compilación.
-- `php artisan migrate --force` sobre MySQL local 8.0 y `php artisan test`: 26 pruebas, 210 aserciones, todas correctas.
-- Revisión visual de Render y Aiven: Render Hobby sin tarjeta, servicio web previsto como Free; Aiven MySQL aparece en Free (1 GB) y facturación actual de $0. La API de correo Brevo y el sitio público aún no se verificaron al redactar este informe.
+- `php artisan migrate --force` sobre MySQL local 8.0 y `php artisan test` tras el despliegue: 26 pruebas, 212 aserciones, todas correctas.
+- Revisión visual posterior al despliegue: Render Web Service Free, workspace Hobby sin tarjeta y total mensual/proyectado de $0; Aiven MySQL Free sin tarjeta y coste mensual actual de $0; Brevo Free con 299 de 300 correos disponibles después de la prueba. El informe de Aiven muestra $0.01 de servicio facturable de una configuración inicial, compensado por $0.01 de crédito de prueba. El servicio activo es Free.
 
-Gitleaks, Semgrep, ZAP y un análisis dinámico de producción no se ejecutaron: las herramientas no estaban disponibles o aún no había despliegue. La ausencia de resultados de estas herramientas no implica ausencia de vulnerabilidades.
+Gitleaks, Semgrep, ZAP y un escaneo dinámico de vulnerabilidades de producción no se ejecutaron: las herramientas no estaban disponibles o habrían generado tráfico adicional contra la instancia Free. La ausencia de resultados de estas herramientas no implica ausencia de vulnerabilidades.
 
 ## Arquitectura y límites de confianza
 
@@ -27,7 +27,7 @@ Las entradas externas pasan por validación Laravel, middleware de rol y consult
 | ID | Hallazgo | Severidad | Estado |
 | --- | --- | --- | --- |
 | S-01 | Registro y compras simuladas podían hacer crecer MySQL | Alta | Corregido y probado localmente |
-| S-02 | Recuperación podía generar correo y coste/abuso | Alta | Corregido y probado localmente; entrega real pendiente |
+| S-02 | Recuperación podía generar correo y coste/abuso | Alta | Corregido; entrega real comprobada |
 | S-03 | Dependencias npm con avisos de seguridad | Media | Corregido; auditoría y build correctos |
 | S-04 | Cabeceras y cifrado de sesión de producción incompletos | Media | Corregido y probado localmente |
 | S-05 | Aiven permite conexiones desde cualquier IP | Media, potencial | Pendiente por IP de salida variable en Render Free |
@@ -43,7 +43,7 @@ No se confirmó una vulnerabilidad de autorización, inyección SQL, XSS, CSRF o
 
 ### S-02 — Solicitudes de correo
 
-**Observación:** cada cuenta conocida podía solicitar varios correos de recuperación. **Cambio:** `app/Services/PasswordResetEmailQuota.php` y la migración de cuotas conservan en MySQL un máximo de 3 intentos por cuenta/día y 30 por aplicación/día, con bloqueo para concurrencia; `PasswordResetController` responde de forma genérica para cuentas inexistentes o cupos agotados. El broker además limita la generación de tokens a una vez por minuto. **Prueba:** prueba de cuota MySQL y envío HTTP simulado a Brevo. **Riesgo residual:** todavía falta probar el remitente verificado, la clave y la entrega real de Brevo Free. Referencias: OWASP API4:2023 y ASVS de recuperación de credenciales.
+**Observación:** cada cuenta conocida podía solicitar varios correos de recuperación. **Cambio:** `app/Services/PasswordResetEmailQuota.php` y la migración de cuotas conservan en MySQL un máximo de 3 intentos por cuenta/día y 30 por aplicación/día, con bloqueo para concurrencia; `PasswordResetController` responde de forma genérica para cuentas inexistentes o cupos agotados. El broker además limita la generación de tokens a una vez por minuto. **Prueba:** prueba de cuota MySQL y envío HTTP simulado a Brevo; en producción llegó un correo de recuperación a la cuenta de prueba. La sustitución final de la contraseña se cubre por pruebas locales, sin modificar la clave de la cuenta pública durante esta revisión. Referencias: OWASP API4:2023 y ASVS de recuperación de credenciales.
 
 ### S-03 — Dependencias de desarrollo
 
@@ -63,11 +63,11 @@ No se confirmó una vulnerabilidad de autorización, inyección SQL, XSS, CSRF o
 
 La ruta `/health` quedó fuera del middleware de sesiones web en `app/Providers/RouteServiceProvider.php`: las comprobaciones periódicas de Render ya no crean sesiones anónimas en MySQL. Una prueba con `SESSION_DRIVER=database` verificó que el número de filas de sesiones permanece igual.
 
-## Comprobaciones parciales y plan
+## Comprobación pública y mantenimiento
 
-1. **Antes de compartir la URL:** comprobar en navegador HTTPS, cookies, rutas, autorización y recuperación de contraseña con una cuenta propia; verificar que Render, Aiven y Brevo indiquen Free y carezcan de método de pago.
-2. **Después del despliegue:** revisar logs de Render sin imprimir secretos, comprobar migraciones en MySQL 8.4 y observar consumo de Aiven. La prueba local fue MySQL 8.0.
-3. **Mantenimiento:** ejecutar periódicamente `composer audit --locked --no-dev` y `npm audit`, y revisar actualizaciones de imagen PHP. Limpiar cuentas y sesiones de demostración si se acerca el límite de 1 GB.
+1. **Despliegue verificado:** el commit `fb613ce` quedó Live en Render. `/health` respondió 200; portada, catálogo, ficha e imagen de producto cargaron por HTTPS. La cuenta de prueba se registró, inició sesión, añadió un producto, registró una compra simulada, consultó su factura y actualizó el perfil. El correo de recuperación llegó a Gmail.
+2. **Base y registros:** las migraciones y semillas corrieron en Aiven MySQL 8.4. La ruta `/health` no crea sesiones. Se corrigieron la lectura del certificado CA por Apache y la ruta de compilación de plantillas tras observar errores 500 durante los primeros despliegues; la versión final respondió correctamente.
+3. **Mantenimiento:** ejecutar periódicamente `composer audit --locked --no-dev` y `npm audit`, y revisar actualizaciones de imagen PHP. Limpiar cuentas y sesiones de demostración si se acerca el límite de 1 GB. Aiven mostraba 28.9% de almacenamiento usado al finalizar la prueba.
 4. **Mejora posterior:** una auditoría dinámica autorizada con ZAP en un entorno aislado y una CSP más estricta; considerar protección de borde contra bots si el tráfico público lo exige y existe una opción gratuita con límites claros.
 
 ## Lista previa a publicación
@@ -76,9 +76,9 @@ La ruta `/health` quedó fuera del middleware de sesiones web en `app/Providers/
 | --- | --- |
 | Pruebas MySQL locales y compilación | Completado |
 | Auditorías de Composer y npm | Completado al 19-10-2026 |
-| No subir `.env`, claves ni datos generados a Git | Comprobado en los archivos revisados; repetir al confirmar el commit |
-| Render Web Service Free, sin tarjeta | Verificado en panel; confirmar al crear el servicio |
-| Aiven MySQL Free y coste actual $0, sin tarjeta | Verificado en panel; confirmar después del despliegue |
-| Brevo Free, remitente verificado y clave restringida a email transaccional | Completado; entrega real pendiente |
-| HTTPS, inicio de sesión y compra simulada pública | Pendiente |
-| Quitar `BOOTSTRAP_ADMIN_PASSWORD` tras el primer inicio | Pendiente |
+| No subir `.env`, claves ni datos generados a Git | Comprobado en los archivos versionados y el parche final |
+| Render Web Service Free, sin tarjeta | Completado: $0 actual y proyectado |
+| Aiven MySQL Free y coste actual $0, sin tarjeta | Completado; crédito cubrió $0.01 del plan inicial |
+| Brevo Free, remitente verificado y clave restringida a email transaccional | Completado; correo recibido |
+| HTTPS, inicio de sesión y compra simulada pública | Completado |
+| Quitar `BOOTSTRAP_ADMIN_PASSWORD` tras el primer inicio | Completado |
