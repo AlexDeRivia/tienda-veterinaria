@@ -77,6 +77,6 @@ No se confirmó una vulnerabilidad de autorización, inyección SQL, XSS, CSRF o
 | No subir `.env`, claves ni datos generados a Git | Comprobado en los archivos revisados; repetir al confirmar el commit |
 | Render Web Service Free, sin tarjeta | Verificado en panel; confirmar al crear el servicio |
 | Aiven MySQL Free y coste actual $0, sin tarjeta | Verificado en panel; confirmar después del despliegue |
-| Brevo Free, remitente y entrega de correo | Pendiente |
+| Brevo Free, remitente verificado y clave restringida a email transaccional | Completado; entrega real pendiente |
 | HTTPS, inicio de sesión y compra simulada pública | Pendiente |
 | Quitar `BOOTSTRAP_ADMIN_PASSWORD` tras el primer inicio | Pendiente |

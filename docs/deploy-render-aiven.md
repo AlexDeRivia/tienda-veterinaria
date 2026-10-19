@@ -6,7 +6,7 @@ La aplicación registra compras simuladas. No procesa pagos. Esta guía prepara 
 
 1. Usa cuentas **sin método de pago** en Render, Aiven y Brevo. Si cualquiera exige agregar una tarjeta para continuar, detén el despliegue. No aceptes una prueba de pago ni un cambio de plan.
 2. En Aiven, selecciona **MySQL Free**, no Developer ni una prueba de un plan superior. El servicio Free ofrece 1 GB de disco y puede apagarse por inactividad.
-3. En Render, crea el Blueprint desde `render.yaml`. Comprueba que propone **un solo Web Service, plan Free**. No agregues Postgres, Key Value, discos persistentes, workers ni dominios de pago. El Blueprint desactiva las vistas previas y los despliegues automáticos.
+3. En Render, crea manualmente **un solo Web Service Docker, plan Free** desde el repositorio privado. La pantalla de creación propone un plan de pago por defecto: selecciona expresamente **$0/mes**. Deja Auto-Deploy en **Off**. No agregues Postgres, Key Value, discos persistentes, workers ni dominios de pago. `render.yaml` queda como configuración reproducible de referencia; un Blueprint sincroniza cambios futuros y puede cambiar costes, por lo que el despliegue manual ofrece una revisión explícita de cada cambio.
 4. En Brevo, selecciona **Free** y no actives complementos, créditos de pago ni cambios de plan. El correo sale por su API HTTPS.
 5. Comprueba después de crear cada recurso que su panel indica Free/$0 y que no existe un método de pago. Revisa el uso incluido de Render con frecuencia. Si alcanzas un límite sin tarjeta, el servicio puede suspenderse hasta el siguiente período; no aumentes el plan para reactivarlo.
 
@@ -21,21 +21,23 @@ El código y el Blueprint no pueden imponer un límite financiero a una cuenta e
 
 ## Render
 
-Publica primero una versión del repositorio que contenga `Dockerfile`, `render.yaml` y el `composer.lock` actualizado. En Render crea un Blueprint desde ese repositorio y revisa la pantalla de recursos antes de confirmar.
+Publica primero una versión del repositorio que contenga `Dockerfile`, `render.yaml` y el `composer.lock` actualizado. En Render crea un Web Service manual desde `main`, elige Docker y plan Free, configura `/health` como Health Check Path y desactiva Auto-Deploy. Revisa que el total indique **$0/mes** antes de confirmar.
 
-Completa los valores secretos solicitados por `render.yaml`:
+Completa estas variables privadas en Render:
 
 | Variable | Valor |
 | --- | --- |
 | `APP_URL` | URL HTTPS exacta del servicio `*.onrender.com` |
 | `APP_KEY` | Resultado de `php artisan key:generate --show` |
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Datos de conexión de Aiven |
-| `AIVEN_CA_PEM` | Contenido completo del certificado CA PEM de Aiven, con encabezado y pie |
+| `AIVEN_CA_BASE64` | Certificado CA PEM de Aiven codificado en base64, en una sola línea; sigue siendo un secreto de configuración |
 | `BREVO_API_KEY` | Clave privada de API de Brevo |
 | `BREVO_FROM_EMAIL` | Remitente registrado y verificado en Brevo |
 | `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Cuenta inicial privada del administrador |
 
 El arranque exige `APP_URL` HTTPS, el certificado CA y la configuración de correo. Ejecuta `migrate --force` (nunca `migrate:fresh`), inserta el catálogo de ejemplo de forma idempotente y crea el administrador solo si aún no existe. Cuando el primer despliegue funcione, **elimina `BOOTSTRAP_ADMIN_PASSWORD` de Render**; los reinicios posteriores preservan la cuenta y no cambian su contraseña.
+
+`AIVEN_CA_BASE64` se obtiene codificando el archivo PEM descargado desde Aiven; en PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes('ca.pem'))`. Esta codificación solo permite poner el certificado en una línea; el valor debe seguir guardándose como variable privada. La clave de Brevo debe tener acceso restringido a **Emails transaccionales**. Brevo permite elegir la categoría, pero la opción `Todos` de esa categoría también concede gestión de plantillas y registros; revisa y rota la clave si deja de ser necesaria.
 
 `SESSION_DRIVER=database` preserva el inicio de sesión entre suspensiones de Render. Las imágenes nuevas están en MySQL y tienen un límite de 512 KB cada una; vigila el disco de 1 GB de Aiven. Los archivos locales nuevos se perderían al suspenderse Render, por lo que no se usan para las imágenes nuevas.
 

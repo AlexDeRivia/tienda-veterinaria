@@ -64,7 +64,7 @@ Para verificar la compilación de Vite:
 
 ## Despliegue gratuito de la demostración
 
-Consulta [docs/deploy-render-aiven.md](docs/deploy-render-aiven.md). El archivo `render.yaml` declara un único servicio web con `plan: free`, sin vistas previas automáticas ni despliegues en cada commit. La base de datos se crea por separado en Aiven MySQL Free; no hay una base de datos de pago definida en el Blueprint.
+Consulta [docs/deploy-render-aiven.md](docs/deploy-render-aiven.md). El archivo `render.yaml` declara un único servicio web con `plan: free`, sin vistas previas automáticas ni despliegues en cada commit. Para evitar cambios automáticos de costes, se recomienda crear el Web Service manualmente, seleccionar Free de forma explícita y desactivar Auto-Deploy. La base de datos se crea por separado en Aiven MySQL Free.
 
 El registro público solicita solo correo, contraseña y nombre o alias. La compra sigue siendo **simulada**: ningún método de pago cobra dinero. En producción, el administrador inicial se crea una sola vez con credenciales privadas; no se insertan las cuentas de ejemplo.
 

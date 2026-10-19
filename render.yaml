@@ -31,7 +31,7 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
-      - key: AIVEN_CA_PEM
+      - key: AIVEN_CA_BASE64
         sync: false
       - key: MYSQL_ATTR_SSL_CA
         value: /tmp/aiven-ca.pem
